@@ -1,0 +1,27 @@
+== HOSTING A GAME
+1) Create a server.
+2) Client probes server.
+3) Server gives client an ID.
+4) Server maps the clientid to player ID.
+5) Server gives a complete list of positions to the new player.
+6) Server relays move commands to player.
+
+== MESSAGE BIBLE: SERVER -> CLIENT (responses
+=command response
+ probe	 (probe_accept, probe_deny)
+ at      
+ update
+ quit
+
+
+== MESSAGE BIBLE: CLIENT -> SERVER
+=command params
+ at
+ probe_accept
+ probe_deny
+
+== MESSAGE STRUCTURE
+{cmd='probe', params={random_id}}
+
+table.insert(game.world.players, Player(uname, game.world.spawnpoint.x, game.world.spawnpoint.y)
+    sendMessage(client, 'at', {game.world.spawnpoint.x, game.world.spawnpoint.y})

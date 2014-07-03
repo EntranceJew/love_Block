@@ -1,0 +1,10 @@
+1) Download LOVE 9.2.1 from: 		http://love2d.org/
+2) Download ZeroBrane Lua Editor from: 	https://studio.zerobrane.com/download.html?not-this-time
+3) Point ZeroBrane to: C:\%appdata%\..\ownCloud\goonhouse\love_block
+4) You may wish to add the directory LOVE installed to your system PATH so you can run "love" from cmd:
+	set PATH=%PATH%;%PROGRAMFILES%\LOVE
+5) Launch the current version of the game by running:
+	cd /D "C:\%appdata%\..\ownCloud\goonhouse\love_block"
+	start love .
+   Or run "love_block.bat"
+6) Wait for more shit to happen.
