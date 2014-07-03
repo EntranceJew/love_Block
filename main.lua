@@ -38,9 +38,13 @@ function love.load()
   class = require("libs.middleclass")
   inspect = require("libs.inspect")
   serialize = require("libs.ser")
+  fpsgraph = require "libs.FPSGraph"
   require("libs.lube")
   require("libs.tserial")
   require("libs.loveframes")
+  
+  game.graphs.fps = fpsgraph.createGraph()
+  game.graphs.mem = fpsgraph.createGraph(0, 30)
   
   loveframes.util.SetActiveSkin("Blu")
   
@@ -69,6 +73,17 @@ function love.load()
 end
 
 function love.update(dt)
+  --[[
+  game.t = game.t + dt
+  if game.t > game.net.timestep then
+    
+    --collect inputs
+    
+    game.net.tick = game.net.tick + 1
+    game.t = game.t - game.net.timestep
+    
+    
+  ]]
   if game.isClient then
     if game.isProbeAccepted then
       game.t = game.t + dt
@@ -93,6 +108,9 @@ function love.update(dt)
   end
   loveframes.update(dt)
   tween.update(dt)
+  
+  fpsgraph.updateFPS(game.graphs.fps, dt)
+  fpsgraph.updateMem(game.graphs.mem, dt)
 end
 
 function love.draw()
@@ -103,6 +121,9 @@ function love.draw()
     v:draw()
   end
   loveframes.draw()
+  
+  love.graphics.setColor(0, 0, 255)
+  fpsgraph.drawGraphs({game.graphs.fps, game.graphs.mem})
 end
 
 function love.mousepressed(x, y, button)

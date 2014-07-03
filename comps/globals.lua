@@ -5,7 +5,15 @@ game = {
   isProbeAccepted = false,
   net = {
     myID = 0,
-    clientIndex = 1
+    clientIndex = 1,
+    timestep = 0.015, --sec, 15ms tick rate = 66/s
+    updaterate = 0.05,  --updates/second, 20
+    tick = 1,
+  },
+  graphs = {
+  },
+  history = { -- this is where 
+    
   },
   console = {
     -- -1 = no limit
