@@ -6,10 +6,28 @@ function Player:initialize(name, x, y)
   self.x = x
   self.y = y
   
+  self.net_history = {}
+  -- keyed by tick number
+  
   self.speed = 200 -- MYSTERY UNITS~
   self.world_id = #self.world[identifier]+1
   self.world[identifier][self.world_id] = self
   -- network announce object position
+end
+
+function Player:network_action(tick, time, command, parameters)
+  if type(self.net_history[tick])~="table" then
+    self.net_history[tick]={}
+  end
+  table.insert(self.net_history[tick],{time=time, cmd=command, params=parameters})
+end
+
+function Player:replay_from_tick(tick)
+  -- shit I don't need any smangy code for now
+  for i=tick, #self.net_history do
+    da = self.net_history[i][1]
+    self[da.cmd](self,unpack(da.params))
+  end
 end
 
 function Player:update(dt)

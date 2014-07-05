@@ -63,7 +63,6 @@ function love.load()
           'main.lua'
         }
   })
-  global_x, global_y = 0, 0
   --Monocle.watch("FPS", function() return math.floor(1/love.timer.getDelta()) end)
   --Monocle.watch("x/y", function() return global_x.."/"..global_y end)
   --Monocle.watch("tick:rate", function() return game.timers.tick..":"..game.net.rate_tick end)
@@ -111,9 +110,9 @@ function love.update(dt)
     if love.keyboard.isDown('down') then    y=1  end
     if love.keyboard.isDown('left') then    x=-1 end
     if love.keyboard.isDown('right') then   x=1  end
-    global_x, global_y = x, y
       
     --world[entity] = {world[entity].x+x, world[entity].y+y}
+    game.world.players[game.net.myID]:network_action(game.net.tick, love.timer.getTime(), 'altMove', {x,y,game.timers.tick}) 
     game.world.players[game.net.myID]:altMove(x,y,game.timers.tick)
     --[[ need to bind through client(s) and not through player]]
     
@@ -179,7 +178,9 @@ function love.keyreleased(key)
     love.event.quit()
   elseif key == "q" then
     -- debug button \o/
-    debug_bar.console_log:MoveIndicator(1)
+    --debug_bar.console_log:MoveIndicator(1)
+    game.world.players[1]:at(320, 240)
+    game.world.players[1]:replay_from_tick(0)
   end
   
   if key == "f5" then
