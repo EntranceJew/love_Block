@@ -7,36 +7,23 @@ function Player:initialize(name, x, y)
   self.x = x
   self.y = y
   
-  local keys={}
-  if self.world_id == 2 then
-    keys={
-      up="north",
-      left="west",
-      down="south",
-      right="east"
-    }
-  else
-    keys={
-      w="north",
-      a="west",
-      s="south",
-      d="east"
-    }
-  end
-  
   self.binds = TLbind.giveInstance({keys=keys})
   
   local font = love.graphics.getFont()
-  self.ox, self.oy = font:getWidth(self.name)/2, font:getHeight()
+  self.width = font:getWidth(self.name)
+  self.height = font:getHeight()
+  self.ox, self.oy = self.width/2, self.height/2
+  
   
   self.rotation = 0
+  self.spin_speed = 0.122173048
   
   self.net_history = {}
   -- keyed by tick number
   
   self.speed = 200 -- MYSTERY UNITS~
   self.world[identifier][self.world_id] = self
-  -- network announce object position
+  return self
 end
 
 function Player:network_proxy(command, parameters)
@@ -73,15 +60,29 @@ function Player:update(dt)
   
   self:network_proxy('altMove', {x,y,dt})
   
-  self.rotation = self.rotation + dt*0.122173048
+  self.rotation = self.rotation + dt*self.spin_speed
   
   if self.rotation >= 6.28318531 then
     self.rotation = self.rotation - 6.28318531
   end
 end
 
+function Player:setControls(binds)
+  self.binds = TLbind.giveInstance(binds)
+end
+
 function Player:draw()
+  -- bounding circle
+  love.graphics.setColor(0, 255, 0, 255)
+  love.graphics.circle( "fill", self.x, self.y, self.width/2, 100 )
+  
+  -- text
+  love.graphics.setColor(255, 255, 255, 255)
   love.graphics.print(self.name, self.x, self.y, self.rotation, 1, 1, self.ox, self.oy)
+  
+  -- point of rotation
+  love.graphics.setColor(255, 0, 0, 255)
+  love.graphics.circle( "fill", self.x, self.y, 1, 100 )
 end
 
 function Player:at(x, y)

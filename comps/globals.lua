@@ -1,8 +1,24 @@
 game = {
-  state = 'main', -- main, host, client
-  isServer = false,
-  isClient = false,
-  isProbeAccepted = false,
+  console = {
+    -- -1 = no limit
+    scrollback_limit = 5,
+    -- -1 = no limit
+    history_limit = 50
+  },
+  debug = {
+    dumpConsoleOnExit = true
+  },
+  engine = {
+    seed_start = love.timer.getTime(),
+  },
+  graphs = {
+    fps = {},
+    mem = {},
+    tick = {},
+  },
+  history = { -- this is where a bunch of data gon' go
+    
+  },
   net = {
     myID = 1,
     clientIndex = 1,
@@ -15,26 +31,16 @@ game = {
     tick = 0,
     update = 0,
   },
-  graphs = {
-  },
-  history = { -- this is where ???
-    
-  },
-  console = {
-    -- -1 = no limit
-    scrollback_limit = 5,
-    -- -1 = no limit
-    history_limit = 50
-  },
-  debug = {
-    dumpConsoleOnExit = true
-  },
-  t = 0,
-  updaterate = 0.1,
-  spawnpoint = {x=320, y=240},
   world = {
     players = {}
-  }
+  },
+  isClient = false,
+  isProbeAccepted = false,
+  isServer = false,
+  spawnpoint = {x=320, y=240},
+  state = 'main', -- main, host, client
+  t = 0,
+  updaterate = 0.1,
 }
 
 resources = {
@@ -42,5 +48,6 @@ resources = {
     bg = love.graphics.newImage("resources/images/bg.png")
   }
 }
+
 resources.img.bgscalex = love.graphics.getWidth()/resources.img.bg:getWidth()
 resources.img.bgscaley = love.graphics.getHeight()/resources.img.bg:getHeight()

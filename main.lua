@@ -1,33 +1,3 @@
---[[ @TODO:
-  1) Syncronize cursor objects.
-  2) Create a settings modal.
-  7) Make the overloaded print respect text formatting OR make the multiline textinput non-editable.
-  8) Pimp out the globals viewer modal.
- 10) Network stats.
- 11) Push debug bar modal into lists.
- 13) Crush global variables.
- 14) Syncronize objects cross-network.
- 15) Unify modals and components to use less globals.
- 16) Mass-import/require libraries.
- 18) Autocomplete.
- 19) Condense number of network events that unofficially populate a new player.
- 20) Re-associate the username to the player text.
- 21) Force a failure on connect if server fails to respond.
- 22) Make a window that visualizes settings / registered variable watchers.
-
-https://developer.valvesoftware.com/wiki/TF2_Network_Graph
-
- bugs:
- 1) Print overload function doesn't handle multiple argument outputs.
- 2) Console print intercept doesn't properly handle misc types like userdata.
- 3) Loading corrupt settings.txt results in total failure. (Overwritten, not joined.)
-
-
-  later:
-  3) include loveframe "demo" system into core
-  --http://love2d.org/wiki/TLbind
-]]
-
 --[[ Current Task:
   1) moving a TLbind instance into each playable entity
   2) automatic inclusion of comps, libs, modals, ents
@@ -35,9 +5,8 @@ https://developer.valvesoftware.com/wiki/TF2_Network_Graph
   7) reroute entities to apply processing to a snapshotted dohickey
 ]]
 function love.load()
-  dawn_of_man = love.timer.getTime()
-  math.randomseed(dawn_of_man)
   require("comps.globals")
+  math.randomseed(game.engine.seed_start)
   require("comps.settings")
   require("comps.console")
   require("comps.network")
@@ -70,6 +39,7 @@ function love.load()
   
   game.graphs.fps = fpsgraph.createGraph()
   game.graphs.mem = fpsgraph.createGraph(0, 30)
+  game.graphs.tick = fpsgraph.createGraph(0, 60)
   
   loveframes.util.SetActiveSkin("Blu")
   
@@ -94,8 +64,10 @@ function love.load()
   -- require entities
   require("ents.player")
   
-  Player('dad', 320, 240)
-  Player('mom', 240, 320)
+  p1 = Player('dad', 320, 240)
+  p1:setControls(sets.controls.player1)
+  p2 = Player('mom', 240, 320)
+  p1.spin_speed = p1.spin_speed*2
   -- @TEST: circumvent netcode for now
   
   game.t = 0 -- (re)set t to 0
@@ -150,8 +122,9 @@ function love.update(dt)
   Monocle.update()
   TLbind:update()
   
-  --fpsgraph.updateFPS(game.graphs.fps, dt)
-  --fpsgraph.updateMem(game.graphs.mem, dt)
+  fpsgraph.updateFPS(game.graphs.fps, dt)
+  fpsgraph.updateMem(game.graphs.mem, dt)
+  fpsgraph.updateGraph(game.graphs.tick, game.timers.tick, "Tick: " .. game.timers.tick, dt)
 end
 
 function love.draw()
@@ -163,8 +136,8 @@ function love.draw()
   end
   loveframes.draw()
   Monocle.draw()
-  --love.graphics.setColor(0, 0, 255)
-  --fpsgraph.drawGraphs({game.graphs.fps, game.graphs.mem})
+  love.graphics.setColor(0, 0, 255)
+  fpsgraph.drawGraphs({game.graphs.fps, game.graphs.mem, game.graphs.tick})
 end
 
 function love.mousepressed(x, y, button)
