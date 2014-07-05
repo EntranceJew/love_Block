@@ -21,18 +21,27 @@ https://developer.valvesoftware.com/wiki/TF2_Network_Graph
  1) Print overload function doesn't handle multiple argument outputs.
  2) Console print intercept doesn't properly handle misc types like userdata.
  3) Loading corrupt settings.txt results in total failure. (Overwritten, not joined.)
+
+
+  later:
+  3) include loveframe "demo" system into core
 ]]
 
 --[[ Current Task:
-  ???
+  1) cleaning out files that don't belong in da repo
+  2) automatic inclusion of comps, libs, modals, ents
+  3) savestate code to make a server snapshot
+  7) reroute entities to apply processing to a snapshotted dohickey
 ]]
 function love.load()
-  math.randomseed(os.time())
+  dawn_of_man = love.timer.getTime()
+  math.randomseed(dawn_of_man)
   require("comps.globals")
   require("comps.settings")
   require("comps.console")
   require("comps.network")
   require("comps.utils")
+  
   -- require libs
   tween = require("libs.tween")
   class = require("libs.middleclass")
@@ -69,48 +78,54 @@ function love.load()
   -- require entities
   require("ents.player")
   
+  Player('dad', 320, 240)
+  -- @TEST: circumvent netcode for now
+  
   game.t = 0 -- (re)set t to 0
 end
 
 function love.update(dt)
-  --[[
-  game.t = game.t + dt
-  if game.t > game.net.timestep then
-    
-    --collect inputs
-    
-    game.net.tick = game.net.tick + 1
-    game.t = game.t - game.net.timestep
-    
-    
-  ]]
-  if game.isClient then
-    if game.isProbeAccepted then
-      game.t = game.t + dt
-      if game.t > game.updaterate then
-        local x, y = 0, 0
-        if love.keyboard.isDown('up') then  y=y-(20*game.t) end
-        if love.keyboard.isDown('down') then    y=y+(20*game.t) end
-        if love.keyboard.isDown('left') then    x=x-(20*game.t) end
-        if love.keyboard.isDown('right') then   x=x+(20*game.t) end
+  game.t = game.t + dt -- @WARNING: this variable will approach infinity now \o/
+  game.timers.tick = game.timers.tick + dt
+  game.timers.update = game.timers.update + dt
+  if game.timers.tick >= game.net.rate_tick then
+    -- this here logic should be inside the player :colbert:
+    local x, y = 0, 0
+    if love.keyboard.isDown('up') then      y=-1 end
+    if love.keyboard.isDown('down') then    y=1  end
+    if love.keyboard.isDown('left') then    x=-1 end
+    if love.keyboard.isDown('right') then   x=1  end
       
-        --world[entity] = {world[entity].x+x, world[entity].y+y}
-        game.world.players[game.net.myID]:move(x,y)
-        sendMessage(client, 'move', {player=game.net.myID,x=x, y=y})
-        sendMessage(client, 'update', {player=game.net.myID})
-        game.t=game.t-game.updaterate -- set t for the next round
-      end
+    --world[entity] = {world[entity].x+x, world[entity].y+y}
+    game.world.players[game.net.myID]:altMove(x,y,game.timers.tick)
+    --[[ need to bind through client(s) and not through player]]
+    
+    -- the above line looks dumb
+    -- that is because it is, it circumvents client-server messaging
+    
+    -- below: stubbed netcode
+    --sendMessage(client, 'move', {player=game.net.myID,x=x, y=y})
+    --sendMessage(client, 'update', {player=game.net.myID})
+    game.timers.tick = game.timers.tick - game.net.rate_tick -- set t for the next round
+    game.net.tick = game.net.tick + 1
+  end
+  
+  if game.timers.update >= game.net.rate_update then
+    -- Timer exceeds update rate, open gullet for some tasty network updates.
+    if game.isClient then
+      client:update(game.timers.update)
     end
-    client:update(dt)
+    if game.isServer then
+      server:update(game.timers.update)
+    end
+    game.timers.update = game.timers.update - game.net.rate_update
   end
-  if game.isServer then
-    server:update(dt)
-  end
+  
   loveframes.update(dt)
   tween.update(dt)
   
-  fpsgraph.updateFPS(game.graphs.fps, dt)
-  fpsgraph.updateMem(game.graphs.mem, dt)
+  --fpsgraph.updateFPS(game.graphs.fps, dt)
+  --fpsgraph.updateMem(game.graphs.mem, dt)
 end
 
 function love.draw()

@@ -1,9 +1,14 @@
 Player = class('Player')
-
+local identifier = 'players'
 function Player:initialize(name, x, y)
+  self.world = game.world
   self.name = name
   self.x = x
   self.y = y
+  
+  self.speed = 20 -- MYSTERY UNITS~
+  self.world_id = #game.world[identifier]+1
+  self.world[identifier][self.world_id] = self
   -- network announce object position
 end
 
@@ -26,4 +31,13 @@ function Player:move(dx, dy)
   -- 
   self.x = self.x + dx
   self.y = self.y + dy
+end
+
+function Player:altMove(x, y, dt)
+  x = x or 0
+  y = y or 0
+  dt = dt or 0
+  -- really, we should just be throwing an error because something went terribly wrong
+  self.x = self.x + (self.speed*x*dt)
+  self.y = self.y + (self.speed*y*dt)
 end

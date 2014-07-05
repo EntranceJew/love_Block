@@ -1,7 +1,6 @@
 function launchClient(uname, host, port)
   print("[LUBE|client] connecting...")
   client = lube.udpClient()
-  --client:setPing(true, 0.1, "pingu")
   client.callbacks.recv = clientRecv
   local suc, err = client:connect(host, tonumber(port))
   if suc then
