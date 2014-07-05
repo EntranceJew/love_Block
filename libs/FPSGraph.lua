@@ -43,7 +43,8 @@ function fpsGraph.createGraph(x, y, width, height, delay, draggable)
 		width = width or 50, --  | dimensions of the graph
 		height = height or 30, --|
 		delay = delay or 0.5, -- delay until the next update
-		draggable = draggable or true, -- whether it is draggable or not
+    
+		draggable = draggable or false, -- whether it is draggable or not
 		vals = vals, -- the values of the graph
 		vmax = 0, -- the maximum value of the graph
 		cur_time = 0, -- the current time of the graph
@@ -106,8 +107,11 @@ end
 -- Updates the FPS graph
 function fpsGraph.updateFPS(graph, dt)
 	local fps = 0.75*1/dt + 0.25*love.timer.getFPS()
+  fps = math.floor(fps*10)/10
+  
+  fps = love.timer.getFPS()
 
-	fpsGraph.updateGraph(graph, fps, "FPS: " .. math.floor(fps*10)/10, dt)
+	fpsGraph.updateGraph(graph, fps, "FPS: " .. fps, dt)
 end
 
 -- Updates the Memory graph
@@ -140,7 +144,8 @@ function fpsGraph.drawGraphs(graphs)
 		end
 
 		-- print the label of the graph
-		love.graphics.print(v.label, v.x, v.height+v.y-8)
+    local width, nolines = fpsGraph.fpsFont:getWrap(v.label, v.width)   
+		love.graphics.printf(v.label, v.x, v.height+v.y-fpsGraph.fpsFont:getHeight()*nolines, v.width)
 	end
   love.graphics.setFont(tempfont)
 end
