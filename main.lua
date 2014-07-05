@@ -34,12 +34,12 @@ function love.load()
         }
   })
   --Monocle.watch("FPS", function() return math.floor(1/love.timer.getDelta()) end)
-  Monocle.watch("in", function() return inspect(game.world.players[1].binds.control) end)
+  --Monocle.watch("in", function() return inspect(game.world.players[1].binds.control) end)
   --Monocle.watch("tick:rate", function() return game.timers.tick..":"..game.net.rate_tick end)
   
-  game.graphs.fps = fpsgraph.createGraph()
-  game.graphs.mem = fpsgraph.createGraph(0, 30)
-  game.graphs.tick = fpsgraph.createGraph(0, 60)
+  game.graphs.fps = fpsgraph.createGraph(love.graphics.getWidth()-50,love.graphics.getHeight()-30, 50, 30, 0.5, false)
+  game.graphs.mem = fpsgraph.createGraph(love.graphics.getWidth()-50,love.graphics.getHeight()-60, 50, 30, 0.5, false)
+  game.graphs.tick = fpsgraph.createGraph(love.graphics.getWidth()-50,love.graphics.getHeight()-90, 50, 30, 0.5, false)
   
   loveframes.util.SetActiveSkin("Blu")
   
@@ -78,19 +78,15 @@ function love.update(dt)
   game.timers.tick = game.timers.tick + dt
   game.timers.update = game.timers.update + dt
   if game.timers.tick >= game.net.rate_tick then
-    -- this here logic should be inside the player :colbert:
-    for k, v in pairs(game.world.players) do
-      v:update(game.timers.tick)
+    for ent_type, entities in pairs(game.world) do
+      for ent_index, entity in pairs(entities) do
+        if entity.active then
+          entity:update(game.timers.tick)
+        end
+      end
     end
     
-    --[[local c, u = 0, 0
-    if love.keyboard.isDown('w') then      u=-1 end
-    if love.keyboard.isDown('s') then    u=1  end
-    if love.keyboard.isDown('a') then    c=-1 end
-    if love.keyboard.isDown('d') then   c=1  end
-    
-    game.world.players[2]:network_proxy('altMove', {c,u,game.timers.tick})]]
-    
+    --game.world.players[2]:network_proxy('altMove', {c,u,game.timers.tick})]]
     --world[entity] = {world[entity].x+x, world[entity].y+y}
     --game.world.players[game.net.myID]:network_action(game.net.tick, love.timer.getTime(), 'altMove', {x,y,game.timers.tick}) 
     
@@ -103,7 +99,9 @@ function love.update(dt)
     -- below: stubbed netcode
     --sendMessage(client, 'move', {player=game.net.myID,x=x, y=y})
     --sendMessage(client, 'update', {player=game.net.myID})
-    game.timers.tick = game.timers.tick - game.net.rate_tick -- set t for the next round
+    
+    -- @WARNING: This code doesn't actually make sense and causes tick debt.
+    game.timers.tick = game.timers.tick - game.net.rate_tick
     game.net.tick = game.net.tick + 1
   end
   
@@ -131,8 +129,12 @@ function love.draw()
 	love.graphics.setColor(255, 255, 255, 255)
 	love.graphics.draw(resources.img.bg, 0, 0, 0, resources.img.bgscalex, resources.img.bgscaley)
   
-  for k, v in pairs(game.world.players) do
-    v:draw()
+  for ent_type, entities in pairs(game.world) do
+    for ent_index, entity in pairs(entities) do
+      if entity.visible then
+        entity:draw()
+      end
+    end
   end
   loveframes.draw()
   Monocle.draw()

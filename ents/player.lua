@@ -1,6 +1,8 @@
 Player = class('Player')
 local identifier = 'players'
 function Player:initialize(name, x, y)
+  self.active = true
+  self.visible = true
   self.world = game.world
   self.world_id = #self.world[identifier]+1
   self.name = name
