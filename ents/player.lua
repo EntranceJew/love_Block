@@ -2,17 +2,50 @@ Player = class('Player')
 local identifier = 'players'
 function Player:initialize(name, x, y)
   self.world = game.world
+  self.world_id = #self.world[identifier]+1
   self.name = name
   self.x = x
   self.y = y
+  
+  local keys={}
+  if self.world_id == 2 then
+    keys={
+      up="north",
+      left="west",
+      down="south",
+      right="east"
+    }
+  else
+    keys={
+      w="north",
+      a="west",
+      s="south",
+      d="east"
+    }
+  end
+  
+  self.binds = TLbind.giveInstance({keys=keys})
+  
+  local font = love.graphics.getFont()
+  self.ox, self.oy = font:getWidth(self.name)/2, font:getHeight()
+  
+  self.rotation = 0
   
   self.net_history = {}
   -- keyed by tick number
   
   self.speed = 200 -- MYSTERY UNITS~
-  self.world_id = #self.world[identifier]+1
   self.world[identifier][self.world_id] = self
   -- network announce object position
+end
+
+function Player:network_proxy(command, parameters)
+  -- Add a command to the network stack and execute it.
+  if type(self.net_history[game.net.tick])~="table" then
+    self.net_history[game.net.tick]={}
+  end
+  table.insert(self.net_history[game.net.tick],{time=love.timer.getTime(), cmd=command, params=parameters})
+  self[command](self,unpack(parameters))
 end
 
 function Player:network_action(tick, time, command, parameters)
@@ -31,12 +64,24 @@ function Player:replay_from_tick(tick)
 end
 
 function Player:update(dt)
-  -- I really don't really have anything to think about right now.
-  -- I like dogs.
+  self.binds:update()
+  local x, y = 0, 0
+  if self.binds.control.north then      y=y-1 end
+  if self.binds.control.south then    y=y+1  end
+  if self.binds.control.west then    x=x-1 end
+  if self.binds.control.east then   x=x+1  end
+  
+  self:network_proxy('altMove', {x,y,dt})
+  
+  self.rotation = self.rotation + dt*0.122173048
+  
+  if self.rotation >= 6.28318531 then
+    self.rotation = self.rotation - 6.28318531
+  end
 end
 
 function Player:draw()
-  love.graphics.print(self.name, self.x, self.y)
+  love.graphics.print(self.name, self.x, self.y, self.rotation, 1, 1, self.ox, self.oy)
 end
 
 function Player:at(x, y)

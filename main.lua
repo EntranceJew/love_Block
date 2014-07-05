@@ -25,10 +25,11 @@ https://developer.valvesoftware.com/wiki/TF2_Network_Graph
 
   later:
   3) include loveframe "demo" system into core
+  --http://love2d.org/wiki/TLbind
 ]]
 
 --[[ Current Task:
-  1) cleaning out files that don't belong in da repo
+  1) moving a TLbind instance into each playable entity
   2) automatic inclusion of comps, libs, modals, ents
   3) savestate code to make a server snapshot
   7) reroute entities to apply processing to a snapshotted dohickey
@@ -48,11 +49,11 @@ function love.load()
   inspect = require("libs.inspect")
   serialize = require("libs.ser")
   fpsgraph = require "libs.FPSGraph"
+  TLbind = require("libs.TLbind") --love.filesystem.load("libs/TLbind.lua")()
   require("libs.lube")
   require("libs.tserial")
   require("libs.loveframes")
   require("libs.monocle")
-  
   Monocle.new({
       isActive=true,
       customPrinter=false,
@@ -64,7 +65,7 @@ function love.load()
         }
   })
   --Monocle.watch("FPS", function() return math.floor(1/love.timer.getDelta()) end)
-  --Monocle.watch("x/y", function() return global_x.."/"..global_y end)
+  Monocle.watch("in", function() return inspect(game.world.players[1].binds.control) end)
   --Monocle.watch("tick:rate", function() return game.timers.tick..":"..game.net.rate_tick end)
   
   game.graphs.fps = fpsgraph.createGraph()
@@ -94,6 +95,7 @@ function love.load()
   require("ents.player")
   
   Player('dad', 320, 240)
+  Player('mom', 240, 320)
   -- @TEST: circumvent netcode for now
   
   game.t = 0 -- (re)set t to 0
@@ -105,15 +107,22 @@ function love.update(dt)
   game.timers.update = game.timers.update + dt
   if game.timers.tick >= game.net.rate_tick then
     -- this here logic should be inside the player :colbert:
-    local x, y = 0, 0
-    if love.keyboard.isDown('up') then      y=-1 end
-    if love.keyboard.isDown('down') then    y=1  end
-    if love.keyboard.isDown('left') then    x=-1 end
-    if love.keyboard.isDown('right') then   x=1  end
-      
+    for k, v in pairs(game.world.players) do
+      v:update(game.timers.tick)
+    end
+    
+    --[[local c, u = 0, 0
+    if love.keyboard.isDown('w') then      u=-1 end
+    if love.keyboard.isDown('s') then    u=1  end
+    if love.keyboard.isDown('a') then    c=-1 end
+    if love.keyboard.isDown('d') then   c=1  end
+    
+    game.world.players[2]:network_proxy('altMove', {c,u,game.timers.tick})]]
+    
     --world[entity] = {world[entity].x+x, world[entity].y+y}
-    game.world.players[game.net.myID]:network_action(game.net.tick, love.timer.getTime(), 'altMove', {x,y,game.timers.tick}) 
-    game.world.players[game.net.myID]:altMove(x,y,game.timers.tick)
+    --game.world.players[game.net.myID]:network_action(game.net.tick, love.timer.getTime(), 'altMove', {x,y,game.timers.tick}) 
+    
+    --game.world.players[game.net.myID]:altMove(x,y,game.timers.tick)
     --[[ need to bind through client(s) and not through player]]
     
     -- the above line looks dumb
@@ -136,10 +145,10 @@ function love.update(dt)
     end
     game.timers.update = game.timers.update - game.net.rate_update
   end
-  
   loveframes.update(dt)
   tween.update(dt)
   Monocle.update()
+  TLbind:update()
   
   --fpsgraph.updateFPS(game.graphs.fps, dt)
   --fpsgraph.updateMem(game.graphs.mem, dt)
