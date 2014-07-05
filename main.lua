@@ -51,6 +51,22 @@ function love.load()
   require("libs.lube")
   require("libs.tserial")
   require("libs.loveframes")
+  require("libs.monocle")
+  
+  Monocle.new({
+      isActive=true,
+      customPrinter=false,
+      printColor = {51, 51, 51},
+      debugToggle = 'f1',
+      filesToWatch =
+        {
+          'main.lua'
+        }
+  })
+  global_x, global_y = 0, 0
+  --Monocle.watch("FPS", function() return math.floor(1/love.timer.getDelta()) end)
+  --Monocle.watch("x/y", function() return global_x.."/"..global_y end)
+  --Monocle.watch("tick:rate", function() return game.timers.tick..":"..game.net.rate_tick end)
   
   game.graphs.fps = fpsgraph.createGraph()
   game.graphs.mem = fpsgraph.createGraph(0, 30)
@@ -85,7 +101,7 @@ function love.load()
 end
 
 function love.update(dt)
-  game.t = game.t + dt -- @WARNING: this variable will approach infinity now \o/
+  --game.t = game.t + dt -- @WARNING: this variable will approach infinity now \o/
   game.timers.tick = game.timers.tick + dt
   game.timers.update = game.timers.update + dt
   if game.timers.tick >= game.net.rate_tick then
@@ -95,6 +111,7 @@ function love.update(dt)
     if love.keyboard.isDown('down') then    y=1  end
     if love.keyboard.isDown('left') then    x=-1 end
     if love.keyboard.isDown('right') then   x=1  end
+    global_x, global_y = x, y
       
     --world[entity] = {world[entity].x+x, world[entity].y+y}
     game.world.players[game.net.myID]:altMove(x,y,game.timers.tick)
@@ -123,6 +140,7 @@ function love.update(dt)
   
   loveframes.update(dt)
   tween.update(dt)
+  Monocle.update()
   
   --fpsgraph.updateFPS(game.graphs.fps, dt)
   --fpsgraph.updateMem(game.graphs.mem, dt)
@@ -136,9 +154,9 @@ function love.draw()
     v:draw()
   end
   loveframes.draw()
-  
-  love.graphics.setColor(0, 0, 255)
-  fpsgraph.drawGraphs({game.graphs.fps, game.graphs.mem})
+  Monocle.draw()
+  --love.graphics.setColor(0, 0, 255)
+  --fpsgraph.drawGraphs({game.graphs.fps, game.graphs.mem})
 end
 
 function love.mousepressed(x, y, button)
@@ -151,6 +169,7 @@ end
  
 function love.keypressed(key, unicode)
   loveframes.keypressed(key, unicode)
+  Monocle.keypressed(key)
 end
  
 function love.keyreleased(key)
@@ -202,6 +221,7 @@ end
 
 function love.textinput(text)
   loveframes.textinput(text)
+  Monocle.textinput(text)
 end
 
 function love.quit()

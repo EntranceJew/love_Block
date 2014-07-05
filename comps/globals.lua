@@ -6,14 +6,15 @@ game = {
   net = {
     myID = 1,
     clientIndex = 1,
-    rate_tick = 0.015, --sec, 15ms tick rate = 66/s
+    rate_tick = 0.020, --sec, 15ms tick rate = 66/s
+    -- supposed to be 0.015 but that causes the tickrate to go faster than the game
     rate_update = 0.05,  --updates/second, 20
     tick = 0,
   },
   timers = {
     tick = 0,
     update = 0,
-  }
+  },
   graphs = {
   },
   history = { -- this is where ???

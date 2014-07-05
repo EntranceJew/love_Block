@@ -6,8 +6,8 @@ function Player:initialize(name, x, y)
   self.x = x
   self.y = y
   
-  self.speed = 20 -- MYSTERY UNITS~
-  self.world_id = #game.world[identifier]+1
+  self.speed = 200 -- MYSTERY UNITS~
+  self.world_id = #self.world[identifier]+1
   self.world[identifier][self.world_id] = self
   -- network announce object position
 end
