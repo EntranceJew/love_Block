@@ -10,6 +10,8 @@ game = {
   },
   engine = {
     seed_start = love.timer.getTime(),
+    max_history_server_snapshots = 100,
+    max_history_entities = 50,
   },
   graphs = {
     fps = {},
@@ -17,7 +19,8 @@ game = {
     tick = {},
   },
   history = { -- this is where a bunch of data gon' go
-    
+    server_snapshots = {},
+    entities = {},
   },
   net = {
     myID = 1,
@@ -32,7 +35,7 @@ game = {
     update = 0,
   },
   world = {
-    players = {}
+    players={},
   },
   isClient = false,
   isProbeAccepted = false,

@@ -1,4 +1,4 @@
-function launchClient(uname, host, port)
+function launchClient(host, port)
   print("[LUBE|client] connecting...")
   client = lube.udpClient()
   client.callbacks.recv = clientRecv

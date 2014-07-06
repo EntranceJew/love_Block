@@ -19,8 +19,7 @@ function connect_panel.func()
   connect_panel.username_input = loveframes.Create("textinput", connect_panel.frame)
 	connect_panel.username_input:SetPos(75, 30)
 	connect_panel.username_input:SetWidth(200)
-  rand = tostring(math.random(99999))
-  connect_panel.username_input:SetValue(rand)
+  connect_panel.username_input:SetValue(sets.net.player_name)
   
   connect_panel.host_label = loveframes.Create("text", connect_panel.frame)
 	connect_panel.host_label:SetPos(5, 65)
@@ -45,8 +44,10 @@ function connect_panel.func()
 	connect_panel.connect_button:SetWidth(135)
 	connect_panel.connect_button:SetText("Connect")
 	connect_panel.connect_button.OnClick = function ()
-    -- @TODO: Save as "last connection settings".
-    launchClient(connect_panel.username_input:GetValue(), connect_panel.host_input:GetValue(), tonumber(connect_panel.port_input:GetValue()))
+    sets.net.port = connect_panel.port_input:GetValue()
+    sets.net.address = connect_panel.host_input:GetValue()
+    sets.net.player_name = connect_panel.username_input:GetValue()
+    launchClient(connect_panel.host_input:GetValue(), tonumber(connect_panel.port_input:GetValue()))
     connect_panel.ToggleVisible()
   end
   
@@ -55,9 +56,12 @@ function connect_panel.func()
 	connect_panel.host_button:SetWidth(135)
 	connect_panel.host_button:SetText("Host")
 	connect_panel.host_button.OnClick = function ()
-    -- @TODO: See previous.
+    sets.net.port = connect_panel.port_input:GetValue()
+    sets.net.address = connect_panel.host_input:GetValue()
+    sets.net.player_name = connect_panel.username_input:GetValue()
+    
     launchServer(tonumber(connect_panel.port_input:GetValue()))
-    launchClient(connect_panel.username_input:GetValue(), "localhost", tonumber(connect_panel.port_input:GetValue()))
+    launchClient("localhost", tonumber(connect_panel.port_input:GetValue()))
     connect_panel.ToggleVisible()
   end
 end

@@ -106,9 +106,6 @@ end
 
 -- Updates the FPS graph
 function fpsGraph.updateFPS(graph, dt)
-	local fps = 0.75*1/dt + 0.25*love.timer.getFPS()
-  fps = math.floor(fps*10)/10
-  
   fps = love.timer.getFPS()
 
 	fpsGraph.updateGraph(graph, fps, "FPS: " .. fps, dt)

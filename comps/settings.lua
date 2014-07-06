@@ -7,10 +7,11 @@ sets = {
   controls = {
     player1 = {
       keys = {
-        up="north",
-        left="west",
-        down="south",
-        right="east",
+        w="north",
+        a="west",
+        s="south",
+        d="east",
+        e="debug",
       },
       mouseAxes = {},
       mouseBtns = {},
@@ -23,10 +24,11 @@ sets = {
     },
     player2 = {
       keys={
-        w="north",
-        a="west",
-        s="south",
-        d="east",
+        up="north",
+        left="west",
+        down="south",
+        right="east",
+        l="debug",
       },
       mouseAxes = {},
       mouseBtns = {},

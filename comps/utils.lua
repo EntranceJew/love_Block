@@ -45,6 +45,40 @@ utils.screenshot = function()
   end
 end
 
+utils.shallowcopy = function(orig)
+  local orig_type = type(orig)
+  local copy
+  if orig_type == 'table' then
+      copy = {}
+      for orig_key, orig_value in pairs(orig) do
+          copy[orig_key] = orig_value
+      end
+  else -- number, string, boolean, etc
+      copy = orig
+  end
+  return copy
+end
+
+utils.register_entity = function(identifier, world, history)
+  if type(world[identifier]) ~= "table" then
+    world[identifier] = {}
+  end
+  if type(history[identifier]) ~= "table" then
+    history[identifier] = {}
+  end
+end
+
+utils.savestate_raw = function()
+  local state = utils.shallowcopy(game.world)
+  --[[for ent_type, entities in pairs(state) do
+    for ent_index, entity in pairs(entities) do
+      entity.class = nil
+    end
+  end]]
+  
+  return state
+end
+
 utils.savestate = function(filename)
   filename = filename or "savestate.txt"
   for k,v in pairs(game.world.players) do

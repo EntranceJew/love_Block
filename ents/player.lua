@@ -4,24 +4,33 @@ function Player:initialize(name, x, y)
   self.active = true
   self.visible = true
   self.world = game.world
-  self.world_id = #self.world[identifier]+1
+  self.history = game.history.entities
+  utils.register_entity(identifier, self.world, self.history)
+  self.world_id = #self.world+1
+  self.history[identifier][self.world_id] = {}
+  
   self.name = name
   self.x = x
   self.y = y
   
   self.binds = TLbind.giveInstance({keys=keys})
   
+  
+  
   local font = love.graphics.getFont()
   self.width = font:getWidth(self.name)
   self.height = font:getHeight()
   self.ox, self.oy = self.width/2, self.height/2
   
+  -- temporary
+  if self.world_id == 1 then
+    self:setControls(sets.controls.player1)
+  elseif self.world_id == 2 then
+    self:setControls(sets.controls.player2)
+  end
   
   self.rotation = 0
   self.spin_speed = 0.122173048
-  
-  self.net_history = {}
-  -- keyed by tick number
   
   self.speed = 200 -- MYSTERY UNITS~
   self.world[identifier][self.world_id] = self
@@ -30,24 +39,33 @@ end
 
 function Player:network_proxy(command, parameters)
   -- Add a command to the network stack and execute it.
-  if type(self.net_history[game.net.tick])~="table" then
-    self.net_history[game.net.tick]={}
+  if type(self.history[identifier][self.world_id][game.net.tick])~="table" then
+    self.history[identifier][self.world_id][game.net.tick]={}
   end
-  table.insert(self.net_history[game.net.tick],{time=love.timer.getTime(), cmd=command, params=parameters})
+  table.insert(self.history[identifier][self.world_id][game.net.tick],{time=love.timer.getTime(), cmd=command, params=parameters})
+  if game.net.tick > game.engine.max_history_entities then
+    self.history[identifier][self.world_id][game.net.tick - game.engine.max_history_entities] = nil
+  end
   self[command](self,unpack(parameters))
 end
 
-function Player:network_action(tick, time, command, parameters)
+--[[function Player:network_action(tick, time, command, parameters)
   if type(self.net_history[tick])~="table" then
     self.net_history[tick]={}
   end
   table.insert(self.net_history[tick],{time=time, cmd=command, params=parameters})
-end
+end]]
 
 function Player:replay_from_tick(tick)
-  -- shit I don't need any smangy code for now
-  for i=tick, #self.net_history do
-    da = self.net_history[i][1]
+  tick = game.net.tick - game.engine.max_history_entities + tick + 1
+  --[[if tick < game.net.tick - game.engine.max_history_entities and tick < game.engine.max_history_entities then
+    --we're going to pretend you meant to say something meaningful
+    --we php now
+    tick = game.net.tick - game.engine.max_history_entities + tick
+  end]]
+  
+  for i=tick, game.net.tick-1 do
+    da = self.history[identifier][self.world_id][i][1]
     self[da.cmd](self,unpack(da.params))
   end
 end
@@ -61,6 +79,10 @@ function Player:update(dt)
   if self.binds.control.east then   x=x+1  end
   
   self:network_proxy('altMove', {x,y,dt})
+  
+  if self.binds.control.tap.debug then
+    self:replay_from_tick(0)
+  end
   
   self.rotation = self.rotation + dt*self.spin_speed
   

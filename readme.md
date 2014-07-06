@@ -15,11 +15,11 @@ This framework was built with rapid cooperative testing in mind. It was build so
 - Console print intercept doesn't properly handle misc types like userdata.
 - Loading corrupt settings.txt results in total failure. (Overwritten, not joined.)
 - In the event of lag, the tick may accrue debt and take a while to correct.
+- As the amount of memory increases (server snapshots) the player's speed does as well.
 
 ### Current Tasks
-- Putting the player controls into the settings.
-- Make entities return self to further apply changes to them.
-- Rework globals.lua to be more clear.
+- Rework networking
+- Push global controls into a TLbind object.
 
 ### Minor To Do
 
