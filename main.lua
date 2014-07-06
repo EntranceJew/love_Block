@@ -34,7 +34,15 @@ function love.load()
         }
   })
   --Monocle.watch("FPS", function() return math.floor(1/love.timer.getDelta()) end)
-  --Monocle.watch("in", function() return inspect(game.world.players[1].binds.control) end)
+  
+  Monocle.watch("server_snapshots", function() return utils.tablelength(game.history.server_snapshots) end)
+  Monocle.watch("entities.players", function()
+      if type(game.history.entities.players)=="table" then
+        if type(game.history.entities.players[1])=="table" then
+          return utils.tablelength(game.history.entities.players[1]) 
+        end
+      end
+  end)
   --Monocle.watch("tick:rate", function() return game.timers.tick..":"..game.net.rate_tick end)
   
   game.graphs.fps = fpsgraph.createGraph(love.graphics.getWidth()-50,love.graphics.getHeight()-30, 50, 30, 0.5, false)
@@ -63,12 +71,6 @@ function love.load()
   
   -- require entities
   require("ents.player")
-  
-  p1 = Player('dad', 320, 240)
-  p1:setControls(sets.controls.player1)
-  p2 = Player('mom', 240, 320)
-  p1.spin_speed = p1.spin_speed*2
-  -- @TEST: circumvent netcode for now
   
   game.t = 0 -- (re)set t to 0
 end
@@ -101,6 +103,12 @@ function love.update(dt)
     --sendMessage(client, 'update', {player=game.net.myID})
     
     -- @WARNING: This code doesn't actually make sense and causes tick debt.
+    if game.isServer then
+      game.history.server_snapshots[game.net.tick] = utils.savestate_raw()
+      if game.net.tick > game.engine.max_history_server_snapshots then
+        game.history.server_snapshots[game.net.tick - game.engine.max_history_server_snapshots] = nil
+      end
+    end
     game.timers.tick = game.timers.tick - game.net.rate_tick
     game.net.tick = game.net.tick + 1
   end
